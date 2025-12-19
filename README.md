@@ -1,4 +1,4 @@
-# Edge-MoE-reordering
+# Lowrank
 I tried Leyao’s old version SSMU baseline code and applied the Edge-MoE reordering method. As a result, the BRAM usage and latency decreased.
 Cahnging Parts:
 
