@@ -13,5 +13,6 @@ Lowrank B:
 <img width="799" height="292" alt="image" src="https://github.com/user-attachments/assets/909d970c-b551-4f6f-9370-e51ff4a0d738" />
 
 Simulation B:
-<img width="1135" height="335" alt="image" src="https://github.com/user-attachments/assets/0616ebd9-755c-4431-b354-064980690f6f" />
+<img width="958" height="200" alt="image" src="https://github.com/user-attachments/assets/59aedb6e-2a82-4456-acda-0d208bf344e1" />
+
 
