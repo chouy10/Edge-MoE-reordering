@@ -7,17 +7,14 @@
 #include <hls_math.h>
 #include <hls_vector.h>
 
-// DTYPE can be integer or fixed point
-// typedef ap_int<8> DTYPE;
-// typedef float DTYPE;
-
+// ==================== Types ====================
 typedef ap_fixed<16,4> DTYPE;   // 16 total bits, 4 integer bits (12 fractional)
 
 // Vector element type (lanes)
 constexpr int VEC_FACTOR = 8;
 typedef hls::vector<DTYPE, VEC_FACTOR> DTYPE_VEC;
 
-// Problem sizes (keep same as before)
+// ==================== Problem sizes ====================
 #define BATCH 1
 #define LENGTH 64
 #define N 2560
@@ -27,7 +24,7 @@ typedef hls::vector<DTYPE, VEC_FACTOR> DTYPE_VEC;
 
 // ==================== Stream-based interfaces ====================
 
-// Part 1: X to X_gate, B, C, delta
+// Part 1: X to X_gate and X_ssm
 void conv1d_silu_stream(
     hls::stream<DTYPE_VEC>& X_in,
     hls::stream<DTYPE>& kernel_in,
@@ -35,6 +32,7 @@ void conv1d_silu_stream(
     hls::stream<DTYPE_VEC>& X_ssm_out
 );
 
+// Part 2: projections -> B, C, delta
 void projection_streams(
     hls::stream<DTYPE_VEC>& X_ssm_in,
     DTYPE_VEC W_B[N][VEC_D],
@@ -46,14 +44,14 @@ void projection_streams(
     hls::stream<DTYPE_VEC>& delta_out_B
 );
 
-// Part 2: A to ddA
+// Part 3: A to ddA
 void A_to_ddA_stream(
     hls::stream<DTYPE_VEC>& A_in,
     hls::stream<DTYPE_VEC>& delta_in,
     hls::stream<DTYPE_VEC>& ddA_out
 );
 
-// Part 3: B to dB
+// Part 3b: B to dB
 void B_to_dB_stream(
     hls::stream<DTYPE_VEC>& B_in,
     hls::stream<DTYPE_VEC>& delta_in,
@@ -69,9 +67,21 @@ void update_H_stream(
     hls::stream<DTYPE_VEC>& H1_out
 );
 
-// ==================== Edge-MoE (Edge-only) final output ====================
-// NOTE: This replaces the old final_output_stream() prototype.
-// It consumes H1 and C in lockstep stream order (i,j) without storing Cbuf.
+// Dup: VEC_D items (for X_ssm split)
+void dup_vecD_stream(
+    hls::stream<DTYPE_VEC>& in,
+    hls::stream<DTYPE_VEC>& out1,
+    hls::stream<DTYPE_VEC>& out2
+);
+
+// H1 duplicator (N*VEC_D items)
+void duplicate_H1_stream(
+    hls::stream<DTYPE_VEC>& in,
+    hls::stream<DTYPE_VEC>& out1,
+    hls::stream<DTYPE_VEC>& out2
+);
+
+// Edge-MoE final output
 void final_output_stream_edgemoE(
     hls::stream<DTYPE_VEC>& X_gate_in,
     hls::stream<DTYPE_VEC>& H1_in,
@@ -79,14 +89,7 @@ void final_output_stream_edgemoE(
     hls::stream<DTYPE_VEC>& out
 );
 
-// lightweight duplicators (kept minimal)
-void duplicate_H1_stream(
-    hls::stream<DTYPE_VEC>& in,
-    hls::stream<DTYPE_VEC>& out1,
-    hls::stream<DTYPE_VEC>& out2
-);
-
-// ==================== Complete stream-based SSMU (Edge-only version) ====================
+// Top
 void SSMU(
     hls::stream<DTYPE>& kernel_in,
     hls::stream<DTYPE_VEC>& A_in,
@@ -100,3 +103,6 @@ void SSMU(
 );
 
 #endif // SSMU_H
+
+#endif // SSMU_H
+
